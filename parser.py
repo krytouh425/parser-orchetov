@@ -74,3 +74,54 @@ class ParsерCSV:
                     print(f"! Строка {nomer}: ошибка данных — {e}, пропускаем")
 
         return sotrudniki
+
+# Генератор отчётов — формирует сводку по отделам
+# Считает среднюю зарплату, количество сотрудников, средний стаж
+
+class GeneratorOtchetov:
+    def __init__(self, sotrudniki):
+        self.sotrudniki = sotrudniki
+
+    def po_otdelam(self):
+        # группируем сотрудников по отделам
+        otdely = {}
+        for s in self.sotrudniki:
+            if s.otdel not in otdely:
+                otdely[s.otdel] = []
+            otdely[s.otdel].append(s)
+        return otdely
+
+    def svodka(self):
+        otdely = self.po_otdelam()
+
+        print("\n" + "=" * 50)
+        print("  ОТЧЁТ ПО ОТДЕЛАМ")
+        print("=" * 50)
+
+        for otdel, spisok in sorted(otdely.items()):
+            zarplaty = [s.zarplata for s in spisok]
+            stazhi = [s.stazh_let() for s in spisok]
+
+            print(f"\n📁 {otdel}")
+            print(f"   Сотрудников:      {len(spisok)}")
+            print(f"   Средняя зарплата: {sum(zarplaty) / len(zarplaty):,.0f} руб.")
+            print(f"   Макс. зарплата:   {max(zarplaty):,.0f} руб.")
+            print(f"   Средний стаж:     {sum(stazhi) / len(stazhi):.1f} лет")
+
+        print("\n" + "=" * 50)
+        print(f"  Всего сотрудников: {len(self.sotrudniki)}")
+        print("=" * 50 + "\n")
+
+    def spisok_otdela(self, otdel):
+        # выводим всех сотрудников конкретного отдела
+        otdely = self.po_otdelam()
+        if otdel not in otdely:
+            print(f"Отдел '{otdel}' не найден")
+            return
+
+        print(f"\n{'=' * 50}")
+        print(f"  СОТРУДНИКИ ОТДЕЛА: {otdel}")
+        print(f"{'=' * 50}")
+        for s in otdely[otdel]:
+            print(f"  {s.imya} | {s.dolzhnost} | {s.zarplata:,.0f} руб. | стаж {s.stazh_let()} лет")
+        print(f"{'=' * 50}\n")
