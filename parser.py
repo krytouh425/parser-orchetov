@@ -125,3 +125,69 @@ class GeneratorOtchetov:
         for s in otdely[otdel]:
             print(f"  {s.imya} | {s.dolzhnost} | {s.zarplata:,.0f} руб. | стаж {s.stazh_let()} лет")
         print(f"{'=' * 50}\n")
+
+# Валидация данных — проверяем корректность перед обработкой
+# Защищаем систему от кривых данных в CSV
+
+from datetime import datetime
+
+ДОПУСТИМЫЕ_ОТДЕЛЫ = ("HR", "IT", "Бухгалтерия", "Продажи", "Логистика", "Маркетинг")
+МИНИМАЛЬНАЯ_ЗАРПЛАТА = 10000
+МАКСИМАЛЬНАЯ_ЗАРПЛАТА = 1000000
+
+
+def валидировать_зарплату(zarplata):
+    try:
+        z = float(zarplata)
+    except ValueError:
+        raise ValueError(f"Зарплата должна быть числом, получено: '{zarplata}'")
+
+    if z < МИНИМАЛЬНАЯ_ЗАРПЛАТА:
+        raise ValueError(f"Зарплата {z} ниже минимальной ({МИНИМАЛЬНАЯ_ЗАРПЛАТА})")
+    if z > МАКСИМАЛЬНАЯ_ЗАРПЛАТА:
+        raise ValueError(f"Зарплата {z} выше максимальной ({МАКСИМАЛЬНАЯ_ЗАРПЛАТА})")
+    return z
+
+
+def валидировать_дату(data):
+    try:
+        datetime.strptime(data, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError(f"Неверный формат даты '{data}', ожидается ГГГГ-ММ-ДД")
+    return data
+
+
+def валидировать_имя(imya):
+    imya = imya.strip()
+    if not imya:
+        raise ValueError("Имя сотрудника не может быть пустым")
+    if len(imya) < 2:
+        raise ValueError(f"Имя слишком короткое: '{imya}'")
+    if any(c.isdigit() for c in imya):
+        raise ValueError(f"Имя не должно содержать цифры: '{imya}'")
+    return imya
+
+
+def запустить_парсер(filepath=None):
+    # точка входа — загружаем данные и выводим отчёт
+    parser = ParsерCSV(filepath) if filepath else ParsерCSV()
+
+    try:
+        sotrudniki = parser.zagruzit()
+    except FileNotFoundError as e:
+        print(f"Ошибка: {e}")
+        return
+    except ValueError as e:
+        print(f"Ошибка файла: {e}")
+        return
+
+    if not sotrudniki:
+        print("Нет данных для построения отчёта")
+        return
+
+    otchet = GeneratorOtchetov(sotrudniki)
+    otchet.svodka()
+
+
+if __name__ == "__main__":
+    запустить_парсер()
