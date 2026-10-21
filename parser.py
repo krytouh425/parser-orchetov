@@ -191,3 +191,10 @@ def запустить_парсер(filepath=None):
 
 if __name__ == "__main__":
     запустить_парсер()
+
+# вспомогательная функция — выводим топ сотрудников по зарплате
+# добавлено для быстрого просмотра на совещаниях
+
+def top_po_zarplate(sotrudniki, kolichestvo=5):
+    otsortirovannye = sorted(sotrudniki, key=lambda s: s.zarplata, reverse=True)
+    return otsortirovannye[:kolichestvo]
