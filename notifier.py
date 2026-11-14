@@ -47,6 +47,12 @@ class NotifierHR:
         if novye:
             print(f"\n  Новые сотрудники:")
             for s in novye:
-                print(f"    {s.imya} — {s.otdel} ({s.data_priema})")
+                dni = (self.vremya - datetime.strptime(s.data_priema, "%Y-%m-%d")).days
+                print(f"    {s.imya} — {s.otdel} ({s.data_priema}, {dni} дней)")
+
+        if vysokie:
+            print(f"\n  Топ зарплат:")
+            for s in sorted(vysokie, key=lambda x: x.zarplata, reverse=True)[:3]:
+                print(f"    {s.imya} — {s.zarplata:,.0f} руб.")
 
         print(f"{'=' * 50}\n")
